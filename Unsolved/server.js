@@ -5,6 +5,7 @@ const path = require('path');
 // Local Modules
 const backEnd = require('./lib/back-end');
 const note_Obj = require('./lib/note_Obj');
+const notes_db = require('./db/db.json');
 
 const PORT = process.env.PORT || 3001;
 
@@ -23,6 +24,10 @@ app.get('/', (req, res) => {
 app.get('/notes', (req, res) => {
     res.sendFile(path.join(__dirname, 'public/notes.html'));
 });
+
+app.get('/api/notes', (req, res) =>
+    res.json(notes_db)
+);
 
 app.listen(PORT, () => {
     console.log(`Example app listening at http://localhost:${PORT}`);
