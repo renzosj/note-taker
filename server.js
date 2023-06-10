@@ -75,6 +75,7 @@ app.delete('/api/notes/:id', (req, res) => {
     let databaseString = JSON.stringify(notes_db);
 
     const id = req.params.id;
+    console.log(id);
 
     for (var i = 0; i < notes_db.length; i++) {
         if (id === notes_db[i].note_id) {
