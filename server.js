@@ -47,7 +47,7 @@ app.post('/api/notes', (req, res) => {
           // if database is empty, simply add the first note to db
           if (newNoteStr === "") {
             const newNoteFileStr = `[${newNoteStr}]`;
-            updateDatabase(newNoteFileStr, newNote.title);
+            updateDatabase(newNoteFileStr);
             } else {
                 // Remove braces, add new note and db strings together and re-add braces
                 databaseString = databaseString.replace('[', '');
@@ -56,7 +56,7 @@ app.post('/api/notes', (req, res) => {
                 const newNoteFileStr = `[\n    ${newNoteStr},${databaseString}]`;
 
                 // save to file updated database
-                updateDatabase(newNoteFileStr, newNote.title);  
+                updateDatabase(newNoteFileStr);  
             }
         
         const response = {
