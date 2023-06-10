@@ -72,19 +72,29 @@ app.post('/api/notes', (req, res) => {
 });
 // delete functionality unfinished
 app.delete('/api/notes/:id', (req, res) => {
-    let databaseString = JSON.stringify(notes_db);
-
     const id = req.params.id;
-    console.log(id);
 
     for (var i = 0; i < notes_db.length; i++) {
         if (id === notes_db[i].note_id) {
-            console.log("id match found, commence deletion");
+            console.log("id match found");
 
-            let title = notes_db[i].title;
-            let text = notes_db[i].text;
+            const title = notes_db[i].title;
+            const text = notes_db[i].text;
             
             console.log(`To be deleted Note: ${title}: ${text} `);
+
+            noteObj = {
+                title: title,
+                text: text,
+                note_id: id
+            };
+            // stringify note obj to utilize String replace method
+            noteToDelStr = JSON.stringify(noteObj) + ",";
+
+            // remove note and update db
+            let databaseString = JSON.stringify(notes_db);
+            databaseString = databaseString.replace(noteToDelStr, "");
+            updateDatabase(databaseString);
         }
     }
 });
