@@ -1,10 +1,11 @@
 // Node Modules
 const express = require('express');
-const fs = require('fs');
 const path = require('path');
-const uuid = require('./helpers/uuid');
+
 // Local Modules
 const notes_db = require('./db/db.json');
+const updateDatabase = require('./helpers/update_db');
+const uuid = require('./helpers/uuid');
 
 const PORT = process.env.PORT || 3001;
 
@@ -30,7 +31,7 @@ app.get('/api/notes', (req, res) =>
 
 app.post('/api/notes', (req, res) => {
     console.info(`${req.method} request received to add a note`);
-
+    // Deconstruct request body
     const {title, text} = req.body;
     if (title && text) {
         const newNote = {
@@ -38,34 +39,53 @@ app.post('/api/notes', (req, res) => {
             text,
             note_id: uuid(),
         };
+      
+        // stringify db file and newNote object 
         const newNoteStr = JSON.stringify(newNote);
         let databaseString = JSON.stringify(notes_db);
 
-        databaseString = databaseString.replace('[', '');
-        databaseString = databaseString.replace(']', '');
+          // if database is empty, simply add the first note to db
+          if (newNoteStr === "") {
+            const newNoteFileStr = `[${newNoteStr}]`;
+            updateDatabase(newNoteFileStr, newNote.title);
+            } else {
+                // Remove braces, add new note and db strings together and re-add braces
+                databaseString = databaseString.replace('[', '');
+                databaseString = databaseString.replace(']', '');
 
-        const newNoteFileStr = `[\n    ${newNoteStr},${databaseString}]`;
-        updateDatabase(newNoteFileStr);
+                const newNoteFileStr = `[\n    ${newNoteStr},${databaseString}]`;
 
-        function updateDatabase(fileStr) {
-            fs.writeFile(`./db/db.json`, fileStr, (err) =>
-            err
-              ? console.error(err)
-              : console.log(`Review for ${newNote.title} has been written to JSON file`)
-            )
-        }
-
+                // save to file updated database
+                updateDatabase(newNoteFileStr, newNote.title);  
+            }
+        
         const response = {
             status: 'success',
             body: newNote,
         };
-
+        //send response 
         console.log(response);
         res.status(201).json(response);
     } else {
         res.status(500).json('Error in posting note');
     }
-    
+});
+// delete functionality unfinished
+app.delete('/api/notes/:id', (req, res) => {
+    let databaseString = JSON.stringify(notes_db);
+
+    const id = req.params.id;
+
+    for (var i = 0; i < notes_db.length; i++) {
+        if (id === notes_db[i].note_id) {
+            console.log("id match found, commence deletion");
+
+            let title = notes_db[i].title;
+            let text = notes_db[i].text;
+            
+            console.log(`To be deleted Note: ${title}: ${text} `);
+        }
+    }
 });
 
 app.listen(PORT, () => {
