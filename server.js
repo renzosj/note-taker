@@ -1,11 +1,12 @@
 // Node Modules
 const express = require('express');
 const path = require('path');
+const fs = require('fs');
 
 // Local Modules
-const notes_db = require('./db/db.json');
 const updateDatabase = require('./helpers/update_db');
 const uuid = require('./helpers/uuid');
+const readDatabase = require('./helpers/read_db');
 
 const PORT = process.env.PORT || 3001;
 
@@ -25,13 +26,19 @@ app.get('/notes', (req, res) => {
     res.sendFile(path.join(__dirname, 'public/notes.html'));
 });
 
-app.get('/api/notes', (req, res) =>
-    res.json(notes_db)
-);
+app.get('/api/notes', async (req, res) => {
+    if (!readDatabase()) {
+        res.json("Database empty");
+        return;
+    }
+    const db_data = await JSON.parse(readDatabase());
+    //console.info(db_data);
+    res.json(db_data);
+});
 
-app.post('/api/notes', (req, res) => {
+app.post('/api/notes', async (req, res) => {
     console.info(`${req.method} request received to add a note`);
-    // Deconstruct request body
+    // Deconstruct request body to note obj
     const {title, text} = req.body;
     if (title && text) {
         const newNote = {
@@ -40,12 +47,12 @@ app.post('/api/notes', (req, res) => {
             note_id: uuid(),
         };
       
-        // stringify db file and newNote object 
+        // read db file and stringify newNote object 
         const newNoteStr = JSON.stringify(newNote);
-        let databaseString = JSON.stringify(notes_db);
+        let databaseString = await readDatabase();
 
           // if database is empty, simply add the first note to db
-          if (newNoteStr === "") {
+          if (!databaseString) {
             const newNoteFileStr = `[${newNoteStr}]`;
             updateDatabase(newNoteFileStr);
             } else {
@@ -54,7 +61,6 @@ app.post('/api/notes', (req, res) => {
                 databaseString = databaseString.replace(']', '');
 
                 const newNoteFileStr = `[\n    ${newNoteStr},${databaseString}]`;
-
                 // save to file updated database
                 updateDatabase(newNoteFileStr);  
             }
@@ -70,32 +76,49 @@ app.post('/api/notes', (req, res) => {
         res.status(500).json('Error in posting note');
     }
 });
-// delete functionality unfinished
-app.delete('/api/notes/:id', (req, res) => {
-    const id = req.params.id;
 
-    for (var i = 0; i < notes_db.length; i++) {
-        if (id === notes_db[i].note_id) {
+
+app.delete('/api/notes/:id', async (req, res) => {
+    const id = req.params.id;
+    let db_data = await JSON.parse(readDatabase());
+    console.info(db_data);
+
+    if (db_data.length === 1) {
+        updateDatabase("");
+        return;
+    }
+
+    for (var i = 0; i < db_data.length; i++) {
+        if (id === db_data[i].note_id) {
             console.log("id match found");
 
-            const title = notes_db[i].title;
-            const text = notes_db[i].text;
+            const title = db_data[i].title;
+            const text = db_data[i].text;
             
-            console.log(`To be deleted Note: ${title}: ${text} `);
+            //console.log(`To be deleted Note: ${title}: ${text} `);
 
-            noteObj = {
+            noteDel = {
                 title: title,
                 text: text,
                 note_id: id
             };
             // stringify note obj to utilize String replace method
-            noteToDelStr = JSON.stringify(noteObj) + ",";
+            noteToDelStr = JSON.stringify(noteDel) + ",";
 
             // remove note and update db
-            let databaseString = JSON.stringify(notes_db);
-            databaseString = databaseString.replace(noteToDelStr, "");
+            db_data = JSON.stringify(db_data);
+            const databaseString = db_data.replace(noteToDelStr, "");
             updateDatabase(databaseString);
+
+            response = {
+                status: 'success',
+                body: noteDel,
+            };
+            res.status(201).json(response);
+            return;
         }
+        res.status(501).json("Error in deletion");
+        
     }
 });
 

@@ -4,6 +4,6 @@ module.exports = function updateDatabase(fileStr) {
     fs.writeFile(`./db/db.json`, fileStr, (err) =>
     err
     ? console.error(err)
-    : console.log("Database successfully updated")
+    : console.log("Database successfully updated\n")
     )
-}
+};
