@@ -1,7 +1,6 @@
 // Node Modules
 const express = require('express');
 const path = require('path');
-const fs = require('fs');
 
 // Local Modules
 const updateDatabase = require('./helpers/update_db');
@@ -28,7 +27,7 @@ app.get('/notes', (req, res) => {
 
 app.get('/api/notes', async (req, res) => {
     if (!readDatabase()) {
-        res.json("Database empty");
+        res.json(readDatabase());
         return;
     }
     const db_data = await JSON.parse(readDatabase());
@@ -80,11 +79,12 @@ app.post('/api/notes', async (req, res) => {
 
 app.delete('/api/notes/:id', async (req, res) => {
     const id = req.params.id;
+    const empty = "";
     let db_data = await JSON.parse(readDatabase());
     console.info(db_data);
 
-    if (db_data.length === 1) {
-        updateDatabase("");
+    if (db_data.length < 1) {
+        updateDatabase(empty);
         return;
     }
 
