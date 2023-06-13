@@ -23,7 +23,9 @@ root. Requires node.
 <a name="use"></a>
 ## Usage
 
-run npm i on CLI to get dependancies, then npm start to start server.
+deployed app: [Click Here](https://note-taker-by-rsj.herokuapp.com/)
+
+To run locally, run npm i on CLI to get dependancies, then npm start to initiate server.
 
 <a name="license"></a>
 ## License
